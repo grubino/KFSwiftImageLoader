@@ -37,7 +37,19 @@ final public class KFImageCacheManager {
         static let isDownloading = "isDownloading"
         static let observerMapping = "observerMapping"
     }
-    
+
+    private class PermissiveNSURLSessionDelegate: NSObject, NSURLSessionDelegate {
+        public func URLSession(session: NSURLSession, didReceiveChallenge challenge: NSURLAuthenticationChallenge, completionHandler: (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Void) {
+            let protectionSpace = challenge.protectionSpace.authenticationMethod
+            if protectionSpace == NSURLAuthenticationMethodServerTrust {
+                let credential = NSURLCredential(forTrust: challenge.protectionSpace.serverTrust!)
+                completionHandler(NSURLSessionAuthChallengeDisposition.UseCredential, credential)
+            } else {
+                completionHandler(NSURLSessionAuthChallengeDisposition.PerformDefaultHandling, nil)
+            }
+        }
+    }
+
     public static let sharedInstance = KFImageCacheManager()
     
     // {"url": {"img": UIImage, "isDownloading": Bool, "observerMapping": {Observer: Int}}}
@@ -47,7 +59,7 @@ final public class KFImageCacheManager {
         let configuration = NSURLSessionConfiguration.defaultSessionConfiguration()
         configuration.requestCachePolicy = .ReturnCacheDataElseLoad
         configuration.URLCache = .sharedURLCache()
-        return NSURLSession(configuration: configuration)
+        return NSURLSession(configuration: configuration, delegate: PermissiveNSURLSessionDelegate())
     }()
     
     /**
