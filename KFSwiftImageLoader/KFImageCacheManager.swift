@@ -59,7 +59,7 @@ final public class KFImageCacheManager {
         let configuration = NSURLSessionConfiguration.defaultSessionConfiguration()
         configuration.requestCachePolicy = .ReturnCacheDataElseLoad
         configuration.URLCache = .sharedURLCache()
-        return NSURLSession(configuration: configuration, delegate: PermissiveNSURLSessionDelegate())
+        return NSURLSession(configuration: configuration, delegate: PermissiveNSURLSessionDelegate(), delegateQueue: nil)
     }()
     
     /**
